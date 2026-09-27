@@ -97,14 +97,32 @@ body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;a
 @media(max-width:1050px){
   .brand{width:205px}.sub{display:none}.tabs{min-width:260px}.tab{min-width:94px;padding:0 12px}.info{width:225px;min-width:225px}.pill.status{min-width:0;max-width:225px;overflow:hidden;text-overflow:ellipsis}
 }
+
+/* Aurora Motion v5 */
+.auroraFx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.auroraBand{position:absolute;height:170%;width:48%;top:-42%;filter:blur(34px);opacity:.22;mix-blend-mode:screen;will-change:transform}
+.auroraBand.a{left:-18%;background:linear-gradient(90deg,transparent,#19d9ff 48%,#226dff 70%,transparent);transform:rotate(16deg);animation:auroraSweepA 9s ease-in-out infinite alternate}
+.auroraBand.b{right:-20%;background:linear-gradient(90deg,transparent,#7857ff 35%,#22dfff 62%,transparent);transform:rotate(-17deg);animation:auroraSweepB 11s ease-in-out infinite alternate}
+.auroraBand.c{left:26%;width:35%;opacity:.12;background:linear-gradient(90deg,transparent,#53f5ff 50%,transparent);transform:rotate(8deg);animation:auroraSweepC 7s ease-in-out infinite alternate}
+.gridFx{position:absolute;inset:0;background-image:linear-gradient(rgba(62,215,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(119,92,255,.03) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 94%);animation:gridFlow 18s linear infinite}
+.spark{position:absolute;width:4px;height:4px;border-radius:50%;background:#87f3ff;box-shadow:0 0 12px #45e9ff;opacity:.55;animation:sparkFloat 6s ease-in-out infinite}
+.spark.s1{left:18%;top:28%;animation-delay:-1.2s}.spark.s2{left:56%;top:18%;animation-delay:-3.8s}.spark.s3{left:82%;top:58%;animation-delay:-2.4s}.spark.s4{left:37%;top:75%;animation-delay:-4.7s}
+.shell{z-index:2}
+@keyframes auroraSweepA{to{transform:translate3d(48vw,7%,0) rotate(12deg) scale(1.08)}}
+@keyframes auroraSweepB{to{transform:translate3d(-43vw,-5%,0) rotate(-12deg) scale(1.12)}}
+@keyframes auroraSweepC{to{transform:translate3d(20vw,2%,0) rotate(4deg) scale(1.16)}}
+@keyframes gridFlow{to{background-position:46px 46px,-46px 46px}}
+@keyframes sparkFloat{0%,100%{transform:translateY(0) scale(.8);opacity:.25}50%{transform:translateY(-24px) scale(1.25);opacity:.85}}
+
 </style>
 </head>
 <body>
+<div class="auroraFx"><div class="auroraBand a"></div><div class="auroraBand b"></div><div class="auroraBand c"></div><div class="gridFx"></div><i class="spark s1"></i><i class="spark s2"></i><i class="spark s3"></i><i class="spark s4"></i></div>
 <div class="shell">
   <div class="row top">
     <div class="brand">
       <div class="orb"></div>
-      <div class="brandText"><div class="title">YT STUDIO CORE</div><div class="sub">AURORA NATIVE SYSTEM · v2.5</div></div>
+      <div class="brandText"><div class="title">YT STUDIO CORE</div><div class="sub">AURORA GLASS CORE · v2.6</div></div>
     </div>
     <div class="tabs">
       <button class="tab active" data-view="youtube">YOUTUBE</button>
@@ -132,7 +150,7 @@ body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;a
         <svg viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M19 12a7 7 0 10-1.6 5"/></svg>
       </button>
     </div>
-    <div class="contextCenter"><div id="modeText" class="modeLabel glass">YOUTUBE CORE · NAVEGACIÓN INTEGRADA</div></div>
+    <div class="contextCenter"><div id="modeText" class="modeLabel glass">YOUTUBE CORE · AD BLOCK ACTIVO</div></div>
     <div class="downloadWrap">
       <button id="downloadBtn" class="action primary" disabled>DESCARGAR</button>
       <div id="downloadMenu" class="menu glass">
