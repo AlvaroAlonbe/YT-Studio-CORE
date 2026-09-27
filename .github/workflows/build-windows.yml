@@ -21,9 +21,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $parts = Get-ChildItem "source_full_parts\part*" | Sort-Object Name
-          if ($parts.Count -eq 0) { throw "No source_full_parts found" }
-          $b64 = ($parts | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) -join ""
+          $bundle = "cloud_bundle\source_bundle.b64"
+          if (-not (Test-Path $bundle)) { throw "Stable source bundle not found: $bundle" }
+          $b64 = [IO.File]::ReadAllText($bundle).Trim()
           [IO.File]::WriteAllBytes("source_full.zip",[Convert]::FromBase64String($b64))
           if (Test-Path "work_full") { Remove-Item "work_full" -Recurse -Force }
           Expand-Archive "source_full.zip" -DestinationPath "work_full" -Force
