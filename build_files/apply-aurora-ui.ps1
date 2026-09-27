@@ -31,6 +31,11 @@ $src = [regex]::Replace($src, 'g_navBrush\s*=\s*CreateSolidBrush\(RGB\([^)]+\)\)
 $anchor = 'std::vector<std::wstring> g_recentEdited;'
 Require-Contains $anchor "global UI state"
 
+# Forward declaration because Aurora renderer is injected before the responsive Ui() helper.
+if (-not $src.Contains("int Ui(HWND hwnd, int px);")) {
+  $src = $src.Replace($anchor, $anchor + [Environment]::NewLine + "int Ui(HWND hwnd, int px);")
+}
+
 if (-not $src.Contains("LRESULT CALLBACK AuroraButtonProc")) {
 $aurora = @'
 
