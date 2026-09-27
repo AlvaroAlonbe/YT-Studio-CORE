@@ -43,6 +43,7 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           .\build_files\apply-aurora-safe.ps1 -ProjectRoot "$env:PROJECT_ROOT"
+          .\build_files\apply-aurora-v3.ps1 -ProjectRoot "$env:PROJECT_ROOT"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -62,54 +63,6 @@ jobs:
           Set-Location "$env:PROJECT_ROOT"
           msbuild "YTStudioCoreNative.sln" /m /t:Build /p:Configuration=Release /p:Platform=x64 /v:minimal
           if (-not (Test-Path "dist\YTStudioCoreNative.exe")) { throw "EXE not generated" }
-
-      - name: Export validated full project ZIP
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          Set-Location "$env:PROJECT_ROOT"
-
-          $export = Join-Path $env:GITHUB_WORKSPACE "project_export"
-          $zip = Join-Path $env:GITHUB_WORKSPACE "YT-Studio-CORE_Project_Aurora_VALIDATED.zip"
-
-          if (Test-Path $export) { Remove-Item $export -Recurse -Force }
-          if (Test-Path $zip) { Remove-Item $zip -Force }
-          New-Item -ItemType Directory -Force $export | Out-Null
-
-          Copy-Item "src" "$export\src" -Recurse -Force
-          Copy-Item "web" "$export\web" -Recurse -Force
-          Copy-Item "helper_native.py" "$export\helper_native.py" -Force
-          Copy-Item "packages.config" "$export\packages.config" -Force
-          Copy-Item "YTStudioCoreNative.sln" "$export\YTStudioCoreNative.sln" -Force
-          Copy-Item "YTStudioCoreNative.vcxproj" "$export\YTStudioCoreNative.vcxproj" -Force
-          Copy-Item "$env:GITHUB_WORKSPACE\build_files\COMPILAR_RELEASE_X64.bat" "$export\COMPILAR_RELEASE_X64.bat" -Force
-          Copy-Item "$env:GITHUB_WORKSPACE\build_files\README_BUILD.txt" "$export\README_BUILD.txt" -Force
-
-          $required = @(
-            "$export\src\YTStudioNative.cpp",
-            "$export\src\app.manifest",
-            "$export\src\app.rc",
-            "$export\web\editor.html",
-            "$export\helper_native.py",
-            "$export\packages.config",
-            "$export\YTStudioCoreNative.sln",
-            "$export\YTStudioCoreNative.vcxproj",
-            "$export\COMPILAR_RELEASE_X64.bat"
-          )
-          foreach ($item in $required) {
-            if (-not (Test-Path $item)) { throw "Missing project file: $item" }
-          }
-
-          Compress-Archive -Path "$export\*" -DestinationPath $zip -CompressionLevel Optimal
-
-      - name: Upload validated project ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: YT-Studio-CORE-Project-Aurora-VALIDATED
-          path: YT-Studio-CORE_Project_Aurora_VALIDATED.zip
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 30
 
       - name: Package integrated editor and helper
         shell: pwsh
@@ -180,6 +133,61 @@ jobs:
           }
           Write-Host "==== COMPLETE DIST ===="
           Get-ChildItem "dist" -Recurse -File | Select-Object FullName,Length
+
+      - name: Export validated full project ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-Location "$env:PROJECT_ROOT"
+
+          $export = Join-Path $env:GITHUB_WORKSPACE "project_export"
+          $zip = Join-Path $env:GITHUB_WORKSPACE "YT-Studio-CORE_Aurora-Crystal-Dark_v3_FULL.zip"
+
+          if (Test-Path $export) { Remove-Item $export -Recurse -Force }
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          New-Item -ItemType Directory -Force $export | Out-Null
+
+          Copy-Item "src" "$export\src" -Recurse -Force
+          Copy-Item "web" "$export\web" -Recurse -Force
+          Copy-Item "helper_native.py" "$export\helper_native.py" -Force
+          Copy-Item "packages.config" "$export\packages.config" -Force
+          Copy-Item "YTStudioCoreNative.sln" "$export\YTStudioCoreNative.sln" -Force
+          Copy-Item "YTStudioCoreNative.vcxproj" "$export\YTStudioCoreNative.vcxproj" -Force
+          Copy-Item "$env:GITHUB_WORKSPACE\build_files\COMPILAR_RELEASE_X64.bat" "$export\COMPILAR_RELEASE_X64.bat" -Force
+          Copy-Item "$env:GITHUB_WORKSPACE\build_files\README_BUILD.txt" "$export\README_BUILD.txt" -Force
+          Copy-Item "dist" "$export\dist" -Recurse -Force
+
+          $required = @(
+            "$export\src\YTStudioNative.cpp",
+            "$export\src\app.manifest",
+            "$export\src\app.rc",
+            "$export\web\editor.html",
+            "$export\helper_native.py",
+            "$export\packages.config",
+            "$export\YTStudioCoreNative.sln",
+            "$export\YTStudioCoreNative.vcxproj",
+            "$export\COMPILAR_RELEASE_X64.bat",
+            "$export\dist\YTStudioCoreNative.exe",
+            "$export\dist\helper_native.py",
+            "$export\dist\web\editor.html",
+            "$export\dist\runtime\python.exe",
+            "$export\dist\tools\yt-dlp.exe",
+            "$export\dist\tools\ffmpeg.exe"
+          )
+          foreach ($item in $required) {
+            if (-not (Test-Path $item)) { throw "Missing project file: $item" }
+          }
+
+          Compress-Archive -Path "$export\*" -DestinationPath $zip -CompressionLevel Optimal
+
+      - name: Upload validated project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: YT-Studio-CORE-Aurora-Crystal-Dark-v3-FULL
+          path: YT-Studio-CORE_Aurora-Crystal-Dark_v3_FULL.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
 
       - name: Upload complete Windows portable
         uses: actions/upload-artifact@v4
