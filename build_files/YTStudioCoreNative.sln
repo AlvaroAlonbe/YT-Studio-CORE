@@ -1,0 +1,15 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "YTStudioCoreNative", "YTStudioCoreNative.vcxproj", "{D5B3C2B7-AD44-4D4C-A8E4-A774CC8F82E3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5B3C2B7-AD44-4D4C-A8E4-A774CC8F82E3}.Release|x64.ActiveCfg = Release|x64
+		{D5B3C2B7-AD44-4D4C-A8E4-A774CC8F82E3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal
