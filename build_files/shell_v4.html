@@ -35,7 +35,31 @@ body::before{width:300px;height:140px;left:12%;top:-90px;background:#19cfff}
 body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;animation-delay:-4s}
 .shell{position:relative;z-index:1;height:100%;padding:10px 14px 11px;display:grid;grid-template-rows:58px 1fr;gap:8px}
 .row{display:flex;align-items:center;min-width:0}
-.top{gap:12px}
+.top{
+  gap:12px;position:relative;isolation:isolate;overflow:hidden;padding:0 12px;
+  border:1px solid rgba(72,210,255,.24);border-radius:18px;
+  background:
+    linear-gradient(180deg,rgba(5,16,31,.84),rgba(3,9,22,.76)),
+    radial-gradient(650px 90px at 22% 10%,rgba(41,206,255,.12),transparent 70%),
+    radial-gradient(520px 100px at 78% 85%,rgba(123,91,255,.11),transparent 72%);
+  box-shadow:inset 0 1px 0 rgba(213,249,255,.08),0 8px 24px rgba(0,0,0,.18);
+}
+.top::before{
+  content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;opacity:.8;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 58'%3E%3Cg fill='none' stroke='%2347ddff' stroke-opacity='.28' stroke-width='1'%3E%3Cpath d='M18 42 L84 18 L142 35 L203 11 L270 28 L340 8 L413 31 L487 13 L561 39 L632 17 L704 33 L783 10 L848 30 L923 8 L1007 31 L1087 13 L1178 37'/%3E%3Cpath d='M84 18 L107 49 L142 35 M203 11 L230 49 L270 28 M632 17 L663 49 L704 33 M923 8 L951 46 L1007 31 M1087 13 L1116 48 L1178 37'/%3E%3C/g%3E%3Cg fill='%238cf4ff'%3E%3Ccircle cx='18' cy='42' r='1.7'/%3E%3Ccircle cx='84' cy='18' r='2.2'/%3E%3Ccircle cx='107' cy='49' r='1.4'/%3E%3Ccircle cx='142' cy='35' r='2'/%3E%3Ccircle cx='203' cy='11' r='1.8'/%3E%3Ccircle cx='230' cy='49' r='1.3'/%3E%3Ccircle cx='270' cy='28' r='2.2'/%3E%3Ccircle cx='340' cy='8' r='1.7'/%3E%3Ccircle cx='413' cy='31' r='2'/%3E%3Ccircle cx='487' cy='13' r='1.5'/%3E%3Ccircle cx='561' cy='39' r='2.1'/%3E%3Ccircle cx='632' cy='17' r='1.8'/%3E%3Ccircle cx='663' cy='49' r='1.3'/%3E%3Ccircle cx='704' cy='33' r='2.2'/%3E%3Ccircle cx='783' cy='10' r='1.7'/%3E%3Ccircle cx='848' cy='30' r='2'/%3E%3Ccircle cx='923' cy='8' r='2.1'/%3E%3Ccircle cx='951' cy='46' r='1.4'/%3E%3Ccircle cx='1007' cy='31' r='2.2'/%3E%3Ccircle cx='1087' cy='13' r='1.8'/%3E%3Ccircle cx='1116' cy='48' r='1.3'/%3E%3Ccircle cx='1178' cy='37' r='2.1'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:100% 100%;background-repeat:no-repeat;
+  filter:drop-shadow(0 0 5px rgba(68,224,255,.35));
+}
+.top::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.38;
+  background:
+    radial-gradient(circle at 7% 32%,#b8fbff 0 1px,transparent 2px),
+    radial-gradient(circle at 31% 68%,#8feeff 0 1px,transparent 2px),
+    radial-gradient(circle at 52% 23%,#b7a8ff 0 1px,transparent 2px),
+    radial-gradient(circle at 69% 73%,#8feeff 0 1px,transparent 2px),
+    radial-gradient(circle at 89% 25%,#c6faff 0 1px,transparent 2px);
+}
+.top>*{position:relative;z-index:1}
 .brand{display:flex;align-items:center;gap:11px;width:292px;min-width:230px}
 .orb{width:42px;height:42px;border-radius:50%;position:relative;border:1px solid rgba(65,232,255,.78);box-shadow:0 0 23px rgba(40,213,255,.24),inset 0 0 17px rgba(94,81,255,.16);background:radial-gradient(circle at 50% 50%,#7e66ff 0 5%,#0b1730 6% 36%,transparent 37%)}
 .orb::before,.orb::after{content:"";position:absolute;inset:5px;border:1px solid rgba(59,225,255,.55);border-radius:50%;animation:spin 7s linear infinite}
@@ -62,7 +86,8 @@ body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;a
 .info{display:flex;gap:8px;justify-content:flex-end;width:420px;min-width:330px}
 .pill{height:35px;border-radius:13px;padding:0 15px;display:flex;align-items:center;justify-content:center;color:#9edbed;font-size:12px;font-weight:650;letter-spacing:.5px;white-space:nowrap}
 .pill.status{min-width:215px;color:#73ebff}
-.context{gap:9px;padding:0 2px}
+.context{gap:9px;padding:0 2px;position:relative}
+#youtubeRow{padding-right:164px}
 .group{display:flex;gap:8px;align-items:center}
 .iconBtn,.action{
   height:41px;border-radius:13px;color:#e4f8ff;cursor:pointer;transition:.2s ease;font:inherit;font-weight:700;
@@ -75,11 +100,33 @@ body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;a
 .action{padding:0 18px;min-width:118px}
 .action.primary{border-color:rgba(126,97,255,.72);background:linear-gradient(145deg,rgba(72,50,159,.72),rgba(25,24,76,.72));color:#d8d1ff}
 .action.downloadReady{border-color:rgba(62,229,255,.76);color:#dffcff}
-.downloadWrap{position:relative}
-.menu{display:none;position:absolute;right:0;top:46px;width:190px;padding:7px;border-radius:14px;z-index:20}
-.menu.open{display:block;animation:pop .16s ease-out}
-.menu button{width:100%;height:34px;border:0;border-radius:9px;background:transparent;color:#d7eff8;text-align:left;padding:0 11px;font:inherit;font-size:12px;cursor:pointer}
-.menu button:hover{background:rgba(55,214,255,.1);color:#fff}
+.downloadWrap{
+  position:absolute;right:2px;top:50%;transform:translateY(-50%);z-index:50;
+  display:flex;flex-direction:row-reverse;align-items:center;gap:8px;
+}
+#downloadBtn{
+  min-width:146px;border-radius:22px;padding:0 20px 0 40px;
+  border-color:rgba(63,227,255,.68);
+  background:linear-gradient(145deg,rgba(20,91,121,.88),rgba(11,35,65,.9) 62%,rgba(68,39,132,.82));
+  box-shadow:inset 0 1px 0 rgba(229,253,255,.2),0 0 0 1px rgba(56,218,255,.08),0 0 24px rgba(38,218,255,.18),0 10px 28px rgba(0,0,0,.3);
+}
+#downloadBtn::before{
+  content:"↓";position:absolute;left:15px;top:50%;transform:translateY(-54%);
+  font-size:20px;font-weight:900;color:#72efff;text-shadow:0 0 10px rgba(64,231,255,.72);
+}
+#downloadBtn.downloadReady{animation:downloadFloat 2.5s ease-in-out infinite}
+.menu{
+  display:none;position:relative;right:auto;top:auto;width:auto;max-width:calc(100vw - 210px);
+  padding:6px;border-radius:16px;z-index:51;gap:5px;align-items:center;white-space:nowrap;
+  overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(225,252,255,.14),0 0 24px rgba(36,214,255,.16),0 12px 30px rgba(0,0,0,.32);
+}
+.menu.open{display:flex;animation:menuSlide .18s ease-out}
+.menu button{
+  width:auto;min-width:86px;height:34px;border:1px solid rgba(80,204,238,.13);border-radius:10px;
+  background:rgba(8,29,44,.5);color:#d7eff8;text-align:center;padding:0 11px;font:inherit;font-size:12px;cursor:pointer;
+}
+.menu button:hover{background:rgba(55,214,255,.13);border-color:rgba(70,226,255,.34);color:#fff}
 .progress{position:absolute;left:14px;right:14px;bottom:4px;height:2px;background:rgba(39,72,88,.45);border-radius:3px;overflow:hidden}
 .progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#28e8ff,#7c62ff);box-shadow:0 0 12px #36e9ff;transition:width .28s ease}
 .hidden{display:none!important}
@@ -91,8 +138,12 @@ body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;a
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{50%{opacity:.55;filter:brightness(1.3)}}
 @keyframes pop{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes menuSlide{from{opacity:0;transform:translateX(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes downloadFloat{0%,100%{transform:translateY(0);box-shadow:inset 0 1px 0 rgba(229,253,255,.2),0 0 22px rgba(38,218,255,.16),0 10px 28px rgba(0,0,0,.3)}50%{transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(229,253,255,.24),0 0 31px rgba(38,218,255,.28),0 13px 32px rgba(0,0,0,.34)}}
 @media(max-width:1250px){
   .brand{width:230px}.info{width:335px}.pill.profile{display:none}.tab{min-width:108px;padding:0 17px}.pill.status{min-width:190px}
+  #downloadBtn{min-width:132px;padding-left:36px}.menu button{min-width:75px;padding:0 8px;font-size:11px}
+  #youtubeRow{padding-right:146px}
 }
 @media(max-width:1050px){
   .brand{width:205px}.sub{display:none}.tabs{min-width:260px}.tab{min-width:94px;padding:0 12px}.info{width:225px;min-width:225px}.pill.status{min-width:0;max-width:225px;overflow:hidden;text-overflow:ellipsis}
@@ -122,7 +173,7 @@ body::after{width:280px;height:150px;right:9%;bottom:-105px;background:#7657ff;a
   <div class="row top">
     <div class="brand">
       <div class="orb"></div>
-      <div class="brandText"><div class="title">YT STUDIO CORE</div><div class="sub">AURORA GLASS CORE · v2.6</div></div>
+      <div class="brandText"><div class="title">YT STUDIO CORE</div><div class="sub">CONSTELLATION CORE · v2.7</div></div>
     </div>
     <div class="tabs">
       <button class="tab active" data-view="youtube">YOUTUBE</button>
