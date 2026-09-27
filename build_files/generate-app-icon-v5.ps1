@@ -19,41 +19,41 @@ New-Item -ItemType Directory -Force $srcDir | Out-Null
 $out = Join-Path $srcDir "app.ico"
 
 $size = 128
-$bmp = New-Object System.Drawing.Bitmap $size,$size,[System.Drawing.Imaging.PixelFormat]::Format32bppArgb
+$bmp = [System.Drawing.Bitmap]::new($size,$size,[System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 $g = [System.Drawing.Graphics]::FromImage($bmp)
 $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
 $g.Clear([System.Drawing.Color]::Transparent)
 
-$bgRect = New-Object System.Drawing.Rectangle 6,6,116,116
-$bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($bgRect,[System.Drawing.Color]::FromArgb(255,3,15,28),[System.Drawing.Color]::FromArgb(255,20,18,55),35)
+$bgRect = [System.Drawing.Rectangle]::new(6,6,116,116)
+$bgBrush = [System.Drawing.Drawing2D.LinearGradientBrush]::new($bgRect,[System.Drawing.Color]::FromArgb(255,3,15,28),[System.Drawing.Color]::FromArgb(255,20,18,55),35.0)
 $g.FillEllipse($bgBrush,6,6,116,116)
 
-$outerGlow = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(110,38,225,255),8)
+$outerGlow = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(110,38,225,255),8.0)
 $outerGlow.Alignment = [System.Drawing.Drawing2D.PenAlignment]::Center
 $g.DrawEllipse($outerGlow,9,9,110,110)
 
-$outer = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(255,55,235,255),3)
+$outer = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(255,55,235,255),3.0)
 $g.DrawEllipse($outer,10,10,108,108)
 
-$mid = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(230,117,87,255),3)
+$mid = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(230,117,87,255),3.0)
 $g.DrawEllipse($mid,28,28,72,72)
 
-$inner = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(210,56,193,255),2)
+$inner = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(210,56,193,255),2.0)
 $g.DrawEllipse($inner,39,39,50,50)
 
-$coreBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255,126,91,255))
+$coreBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255,126,91,255))
 $g.FillEllipse($coreBrush,56,56,16,16)
 
-$playPath = New-Object System.Drawing.Drawing2D.GraphicsPath
+$playPath = [System.Drawing.Drawing2D.GraphicsPath]::new()
 $playPath.AddPolygon([System.Drawing.Point[]]@(
-  (New-Object System.Drawing.Point 49,43),
-  (New-Object System.Drawing.Point 49,85),
-  (New-Object System.Drawing.Point 84,64)
+  ([System.Drawing.Point]::new(49,43)),
+  ([System.Drawing.Point]::new(49,85)),
+  ([System.Drawing.Point]::new(84,64))
 ))
-$playBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(225,217,251,255))
+$playBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(225,217,251,255))
 $g.FillPath($playBrush,$playPath)
 
-$shine = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(135,220,255,255),2)
+$shine = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(135,220,255,255),2.0)
 $g.DrawArc($shine,18,18,92,92,205,105)
 
 $hIcon = $bmp.GetHicon()
