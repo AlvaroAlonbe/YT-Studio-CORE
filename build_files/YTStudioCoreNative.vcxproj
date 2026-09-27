@@ -53,10 +53,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\YTStudioNative.cpp" />
-    <ResourceCompile Include="src\app.rc" />
-    <None Include="src\app.manifest" />
-    <None Include="packages.config" />
+    <ClCompile Include="src\YTStudioNative.cpp" /><None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
