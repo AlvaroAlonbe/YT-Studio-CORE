@@ -53,7 +53,7 @@ jobs:
           Set-Location "$env:PROJECT_ROOT"
           $p = "src\\YTStudioNative.cpp"
           Write-Host "==== UI SOURCE MARKERS ===="
-          Select-String -Path $p -Pattern "g_topBrush|g_navBrush|WM_PAINT|TrackPopupMenu|CreatePopupMenu|ID_DOWNLOAD|ID_DL_4K|CreateSolidBrush|Btn\\(|CreateWindowW|WndProc|Layout\\(" -Context 5,12 | ForEach-Object { $_.ToString() }
+          Select-String -Path $p -SimpleMatch -Pattern @("g_topBrush","g_navBrush","WM_PAINT","TrackPopupMenu","CreatePopupMenu","ID_DOWNLOAD","ID_DL_4K","CreateSolidBrush","Btn(","CreateWindowW","WndProc","Layout(") -Context 5,12 | ForEach-Object { $_.ToString() }
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
