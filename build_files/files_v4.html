@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biblioteca YT Studio CORE</title>
+<style>
+:root{color-scheme:dark;--cyan:#43e7ff;--violet:#8064ff;--text:#eafaff;--muted:#78aabd}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI Variable","Segoe UI",sans-serif;color:var(--text)}
+body{background:radial-gradient(700px 420px at 18% 12%,#12384c66,transparent 70%),radial-gradient(700px 440px at 86% 88%,#281e6255,transparent 72%),#020711}
+body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(90px);opacity:.22;pointer-events:none;animation:float 8s ease-in-out infinite alternate}
+body:before{width:420px;height:300px;background:#17d5ff;left:-170px;top:-120px}body:after{width:420px;height:320px;background:#775cff;right:-180px;bottom:-160px;animation-delay:-4s}
+.wrap{height:100%;padding:34px clamp(28px,5vw,86px);position:relative;z-index:1}
+.head{text-align:center;margin-bottom:28px}.head h1{margin:0;color:#4beaff;font-size:clamp(28px,3vw,42px);letter-spacing:1px;text-shadow:0 0 28px #34dcff44}.head p{margin:9px 0 0;color:#79aabd;font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:1200px;margin:0 auto}
+.card{position:relative;min-height:300px;padding:24px;border-radius:26px;border:1px solid #4bc8ec55;background:linear-gradient(155deg,#0c2133c9,#07111fae 62%,#14102eb0);box-shadow:0 30px 90px #0008,inset 0 1px #d5fbff3b,inset 0 0 40px #2ed5ff0c;backdrop-filter:blur(24px);overflow:hidden}
+.card.violet{border-color:#856cff55;background:linear-gradient(155deg,#121b35ca,#0a1124b0 60%,#211341b5)}
+.card:before{content:"";position:absolute;inset:-80% -30%;background:linear-gradient(110deg,transparent 42%,#69ecff13 48%,#8d6dff20 53%,transparent 60%);animation:sweep 6s linear infinite;pointer-events:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px;position:relative;z-index:1}.name{font-size:20px;font-weight:800;letter-spacing:.5px}.badge{min-width:48px;height:32px;padding:0 12px;border-radius:12px;display:grid;place-items:center;border:1px solid #4be6ff55;background:#0a2132b8;color:#70eaff;font-weight:800}
+.violet .badge{border-color:#846aff66;color:#bdb2ff;background:#171334b8}
+.list{margin-top:22px;display:grid;gap:8px;position:relative;z-index:1}.item{height:42px;border-radius:12px;padding:0 13px;display:flex;align-items:center;color:#bad7e3;background:#06111da0;border:1px solid #2f78963d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{color:#5f8697;font-style:italic}
+.actions{display:flex;justify-content:center;gap:14px;margin-top:25px}.btn{height:44px;padding:0 20px;border-radius:14px;border:1px solid #4ddfff66;background:linear-gradient(145deg,#0d354bca,#091829c2);color:#dcf8ff;font:inherit;font-weight:700;cursor:pointer;box-shadow:inset 0 1px #fff2,0 12px 30px #0004;transition:.2s}.btn.alt{border-color:#8168ff66;background:linear-gradient(145deg,#2a2159c8,#12162fc2)}.btn:hover{transform:translateY(-2px);box-shadow:0 0 26px #34dcff22,0 16px 34px #0006}.path{text-align:center;margin-top:22px;color:#5e889a;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes sweep{to{transform:translateX(55%)}}@keyframes float{to{transform:translate(90px,55px) scale(1.12)}}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.card{min-height:240px}.wrap{overflow:auto}.actions{padding-bottom:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><h1>BIBLIOTECA LOCAL</h1><p>Contenido generado y descargado por YT Studio CORE</p></div>
+  <div class="grid">
+    <section class="card">
+      <div class="top"><div class="name">DESCARGAS</div><div id="downloadsCount" class="badge">0</div></div>
+      <div id="downloadsList" class="list"></div>
+    </section>
+    <section class="card violet">
+      <div class="top"><div class="name">EDITADOS</div><div id="editedCount" class="badge">0</div></div>
+      <div id="editedList" class="list"></div>
+    </section>
+  </div>
+  <div class="actions">
+    <button class="btn" onclick="send('open:downloads')">ABRIR DESCARGAS</button>
+    <button class="btn alt" onclick="send('open:edited')">ABRIR EDITADOS</button>
+  </div>
+  <div id="path" class="path"></div>
+</div>
+<script>
+const send=m=>window.chrome?.webview?.postMessage(m);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function fill(id,items){const el=document.getElementById(id);el.innerHTML=(items&&items.length)?items.map(x=>'<div class="item">'+esc(x)+'</div>').join(''):'<div class="item empty">Sin archivos todavía</div>'}
+window.chrome?.webview?.addEventListener('message',e=>{const s=e.data||{};document.getElementById('downloadsCount').textContent=s.downloadCount??0;document.getElementById('editedCount').textContent=s.editedCount??0;fill('downloadsList',s.recentDownloads);fill('editedList',s.recentEdited);document.getElementById('path').textContent=s.path||''});
+send('ready');
+</script>
+</body>
+</html>
