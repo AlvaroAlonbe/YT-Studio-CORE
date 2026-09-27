@@ -44,6 +44,23 @@ jobs:
           $ErrorActionPreference = "Stop"
           .\build_files\apply-aurora-ui.ps1 -ProjectRoot "$env:PROJECT_ROOT"
 
+      - name: Package updated project ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $zip = Join-Path $env:GITHUB_WORKSPACE "YT-Studio-CORE_Project_Aurora.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path "$env:PROJECT_ROOT\*" -DestinationPath $zip -CompressionLevel Optimal
+
+      - name: Upload updated project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: YT-Studio-CORE-Project-Aurora
+          path: YT-Studio-CORE_Project_Aurora.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
