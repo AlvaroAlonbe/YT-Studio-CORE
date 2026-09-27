@@ -65,7 +65,6 @@ xcopy /E /I /Y "$(ProjectDir)web\*" "$(OutDir)web\" &gt;nul</Command>
     <None Include="packages.config" />
     <None Include="web\editor.html" />
     <None Include="helper_native.py" />
-    <Image Include="assets\YTStudio.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
