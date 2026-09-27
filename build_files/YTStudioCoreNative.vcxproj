@@ -2,8 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
+      <Configuration>Release</Configuration><Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -26,12 +25,11 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)dist\</OutDir>
-    <IntDir>$(ProjectDir)build\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)build\Release\</IntDir>
     <TargetName>YTStudioCoreNative</TargetName>
     <WebView2LoaderPreference>Static</WebView2LoaderPreference>
   </PropertyGroup>
@@ -48,29 +46,25 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>wWinMainCRTStartup</EntryPointSymbol>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(OutDir)web" mkdir "$(OutDir)web"
-copy /Y "$(ProjectDir)helper_native.py" "$(OutDir)helper_native.py" &gt;nul
-xcopy /E /I /Y "$(ProjectDir)web\*" "$(OutDir)web\" &gt;nul</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\YTStudioNative.cpp" />
     <ResourceCompile Include="src\app.rc" />
     <None Include="src\app.manifest" />
     <None Include="packages.config" />
-    <None Include="web\editor.html" />
-    <None Include="helper_native.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\Microsoft.Web.WebView2.1.0.4191.47\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('packages\Microsoft.Web.WebView2.1.0.4191.47\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="packages\Microsoft.Web.WebView2.1.0.4191.47\build\native\Microsoft.Web.WebView2.targets"
+      Condition="Exists('packages\Microsoft.Web.WebView2.1.0.4191.47\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <Error Condition="!Exists('packages\Microsoft.Web.WebView2.1.0.4191.47\build\native\Microsoft.Web.WebView2.targets')" Text="Microsoft.Web.WebView2 1.0.4191.47 was not restored." />
+    <Error Condition="!Exists('packages\Microsoft.Web.WebView2.1.0.4191.47\build\native\Microsoft.Web.WebView2.targets')"
+      Text="Microsoft.Web.WebView2 1.0.4191.47 was not restored." />
   </Target>
 </Project>
