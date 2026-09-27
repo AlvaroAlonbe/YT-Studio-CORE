@@ -240,16 +240,16 @@ $src = $src.Replace('; RoundAuroraControl(g_btnDownload)', '')
 $src = $src.Replace('; RoundAuroraControl(g_btnOpenDownloads)', '')
 $src = $src.Replace('; RoundAuroraControl(g_btnOpenEdited)', '')
 
-$paintOld = 'RECT top{ 0,0,rc.right,topH }; FillRect(hdc, &top, g_topBrush);' + $nl + '            if (navH) { RECT nav{ 0,topH,rc.right,topH + navH }; FillRect(hdc, &nav, g_navBrush); }'
+$paintPattern = 'RECT top\{ 0,0,rc\.right,topH \}; FillRect\(hdc, &top, g_topBrush\);\s*if \(navH\) \{ RECT nav\{ 0,topH,rc\.right,topH \+ navH \}; FillRect\(hdc, &nav, g_navBrush\); \}'
 $paintNew = 'RECT top{ 0,0,rc.right,topH }; FillAuroraGradient(hdc, top, RGB(6, 24, 38), RGB(3, 12, 23));' + $nl + '            if (navH) { RECT nav{ 0,topH,rc.right,topH + navH }; FillAuroraGradient(hdc, nav, RGB(5, 18, 31), RGB(2, 9, 17)); }'
-if (-not $src.Contains($paintOld)) { throw "Paint gradient anchor not found" }
-$src = $src.Replace($paintOld, $paintNew)
+if (-not [regex]::IsMatch($src, $paintPattern)) { throw "Paint gradient anchor not found" }
+$src = [regex]::Replace($src, $paintPattern, $paintNew, 1)
 
 $src = $src.Replace('g_hudTimer = SetTimer(hwnd, 1, 120, nullptr);', 'g_hudTimer = SetTimer(hwnd, 1, 240, nullptr);')
-$timerOld = 'RECT top{}; GetClientRect(hwnd, &top); top.bottom = Ui(hwnd, 122);' + $nl + '            InvalidateRect(hwnd, &top, FALSE);'
+$timerPattern = 'RECT top\{\}; GetClientRect\(hwnd, &top\); top\.bottom = Ui\(hwnd, 122\);\s*InvalidateRect\(hwnd, &top, FALSE\);'
 $timerNew = 'RECT orb{ 0, 0, Ui(hwnd, 62), Ui(hwnd, 74) };' + $nl + '            InvalidateRect(hwnd, &orb, FALSE);'
-if (-not $src.Contains($timerOld)) { throw "Timer invalidation anchor not found" }
-$src = $src.Replace($timerOld, $timerNew)
+if (-not [regex]::IsMatch($src, $timerPattern)) { throw "Timer invalidation anchor not found" }
+$src = [regex]::Replace($src, $timerPattern, $timerNew, 1)
 
 $createAnchor = 'g_navBrush = CreateSolidBrush(RGB(3, 11, 20));'
 if (-not $src.Contains($createAnchor)) { throw "WM_CREATE brush anchor not found" }
