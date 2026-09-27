@@ -22,7 +22,7 @@ $rcText = @'
 if (-not $src.Contains('EventRegistrationToken g_adBlockToken{};')) {
     $anchor = 'EventRegistrationToken g_filesMessageToken{};'
     if (-not $src.Contains($anchor)) { throw "AdBlock token anchor missing" }
-    $src = $src.Replace($anchor, $anchor + $nl + 'EventRegistrationToken g_adBlockToken{};')
+    $src = $src.Replace($anchor, $anchor + $nl + 'EventRegistrationToken g_adBlockToken{};' + $nl + 'bool g_adBlockInstalled = false;')
 }
 if (-not $src.Contains('void InstallAdBlocker();')) {
     $anchor = 'void PostFilesState();'
@@ -57,7 +57,8 @@ bool ShouldBlockAdRequest(const std::wstring& uri) {
 }
 
 void InstallAdBlocker() {
-    if (!g_youtubeWebView || !g_env) return;
+    if (g_adBlockInstalled || !g_youtubeWebView || !g_env) return;
+    g_adBlockInstalled = true;
 
     g_youtubeWebView->AddWebResourceRequestedFilter(
         L"*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
@@ -131,6 +132,7 @@ void InstallAdBlocker() {
         adScript,
         Callback<ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler>(
             [](HRESULT, LPCWSTR) -> HRESULT { return S_OK; }).Get());
+    g_youtubeWebView->ExecuteScript(adScript, nullptr);
 }
 
 '@
@@ -140,12 +142,19 @@ void InstallAdBlocker() {
 }
 
 if (-not $src.Contains('InstallAdBlocker(); // YTSC_V5')) {
-    $pattern = 'g_youtubeController->get_CoreWebView2\(g_youtubeWebView\.GetAddressOf\(\)\);\s*if\s*\(FAILED\(hr\)\s*\|\|\s*!g_youtubeWebView\)\s*return hr;'
-    $rx = [regex]::new($pattern,[Text.RegularExpressions.RegexOptions]::Singleline)
-    $m = $rx.Match($src)
-    if (-not $m.Success) { throw "YouTube WebView adblock hook anchor missing" }
-    $replacement = $m.Value + $nl + '                            InstallAdBlocker(); // YTSC_V5'
-    $src = $rx.Replace($src,$replacement,1)
+    $oldNav = @'
+void UpdateNavState() {
+    PostShellState();
+}
+'@
+    $newNav = @'
+void UpdateNavState() {
+    InstallAdBlocker(); // YTSC_V5
+    PostShellState();
+}
+'@
+    if (-not $src.Contains($oldNav)) { throw "YouTube nav adblock hook anchor missing" }
+    $src = $src.Replace($oldNav,$newNav)
 }
 
 if (-not $src.Contains('YTSC_ICON_V5')) {
@@ -172,7 +181,8 @@ $checks = @(
   'AddWebResourceRequestedFilter',
   'AddScriptToExecuteOnDocumentCreated',
   'YTSC_ICON_V5',
-  'g_adBlockToken'
+  'g_adBlockToken',
+  'g_adBlockInstalled'
 )
 foreach ($check in $checks) {
     if (-not $src.Contains($check)) { throw "WebShell v5 validation failed: $check" }
