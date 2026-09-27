@@ -47,6 +47,14 @@ jobs:
           .\build_files\generate-app-icon-v5.ps1 -ProjectRoot "$env:PROJECT_ROOT"
           .\build_files\apply-webshell-v5.ps1 -ProjectRoot "$env:PROJECT_ROOT"
 
+      - name: Inspect UI source
+        shell: pwsh
+        run: |
+          Set-Location "$env:PROJECT_ROOT"
+          $p = "src\\YTStudioNative.cpp"
+          Write-Host "==== UI SOURCE MARKERS ===="
+          Select-String -Path $p -Pattern "g_topBrush|g_navBrush|WM_PAINT|TrackPopupMenu|CreatePopupMenu|ID_DOWNLOAD|ID_DL_4K|CreateSolidBrush|Btn\\(|CreateWindowW|WndProc|Layout\\(" -Context 5,12 | ForEach-Object { $_.ToString() }
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
