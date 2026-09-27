@@ -42,7 +42,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          .\build_files\apply-aurora-ui.ps1 -ProjectRoot "$env:PROJECT_ROOT"
+          .\build_files\apply-aurora-safe.ps1 -ProjectRoot "$env:PROJECT_ROOT"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
