@@ -1,0 +1,9 @@
+work/
+source.zip
+packages/
+build/
+dist/
+*.log
+*.zip
+*.user
+.vs/
