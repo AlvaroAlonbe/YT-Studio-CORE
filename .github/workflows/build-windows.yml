@@ -1,0 +1,125 @@
+name: Build YT Studio CORE Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-2025
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct source archive
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          if (Test-Path "source_parts") {
+            $parts = Get-ChildItem "source_parts\part*" | Sort-Object Name
+            if ($parts.Count -eq 0) { throw "No source_parts found" }
+            $b64 = ($parts | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) -join ""
+          } elseif (Test-Path "source.b64") {
+            $b64 = [IO.File]::ReadAllText("source.b64").Trim()
+          } else {
+            throw "No source archive found"
+          }
+          [IO.File]::WriteAllBytes("source.zip",[Convert]::FromBase64String($b64))
+          if (Test-Path "work") { Remove-Item "work" -Recurse -Force }
+          Expand-Archive "source.zip" -DestinationPath "work"
+          Write-Host "Source archive extracted"
+          Get-ChildItem work -Recurse -File | Select-Object FullName
+
+      - name: Normalize project root
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $cpp = Get-ChildItem work -Recurse -Filter "YTStudioNative.cpp" | Select-Object -First 1
+          if (-not $cpp) { throw "YTStudioNative.cpp was not found in reconstructed source" }
+          $srcDir = $cpp.Directory.FullName
+          $root = Split-Path $srcDir -Parent
+          Copy-Item "build_files\YTStudioCoreNative.vcxproj" "$root\YTStudioCoreNative.vcxproj" -Force
+          Copy-Item "build_files\YTStudioCoreNative.sln" "$root\YTStudioCoreNative.sln" -Force
+          Copy-Item "build_files\packages.config" "$root\packages.config" -Force
+          "PROJECT_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "PROJECT_ROOT=$root"
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore WebView2 SDK
+        shell: pwsh
+        run: |
+          Set-Location "$env:PROJECT_ROOT"
+          nuget restore "YTStudioCoreNative.sln" -PackagesDirectory "packages" -NonInteractive
+
+      - name: Build Release x64
+        shell: pwsh
+        run: |
+          Set-Location "$env:PROJECT_ROOT"
+          msbuild "YTStudioCoreNative.sln" /m /t:Build /p:Configuration=Release /p:Platform=x64 /v:minimal
+          if (-not (Test-Path "dist\YTStudioCoreNative.exe")) {
+            throw "Build finished but dist\YTStudioCoreNative.exe was not generated"
+          }
+
+      - name: Add portable Python helper
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-Location "$env:PROJECT_ROOT"
+          New-Item -ItemType Directory -Force "dist\runtime" | Out-Null
+          Invoke-WebRequest "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip" -OutFile "python.zip"
+          Expand-Archive "python.zip" -DestinationPath "dist\runtime" -Force
+
+      - name: Add yt-dlp and FFmpeg
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-Location "$env:PROJECT_ROOT"
+          New-Item -ItemType Directory -Force "dist\tools" | Out-Null
+          Invoke-WebRequest "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "dist\tools\yt-dlp.exe"
+          Invoke-WebRequest "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile "ffmpeg.zip"
+          if (Test-Path "ffmpeg_tmp") { Remove-Item "ffmpeg_tmp" -Recurse -Force }
+          Expand-Archive "ffmpeg.zip" -DestinationPath "ffmpeg_tmp" -Force
+          $ffmpeg = Get-ChildItem "ffmpeg_tmp" -Recurse -Filter "ffmpeg.exe" | Select-Object -First 1
+          $ffprobe = Get-ChildItem "ffmpeg_tmp" -Recurse -Filter "ffprobe.exe" | Select-Object -First 1
+          if ($ffmpeg) { Copy-Item $ffmpeg.FullName "dist\tools\ffmpeg.exe" -Force }
+          if ($ffprobe) { Copy-Item $ffprobe.FullName "dist\tools\ffprobe.exe" -Force }
+
+      - name: Add Real-ESRGAN
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-Location "$env:PROJECT_ROOT"
+          New-Item -ItemType Directory -Force "dist\tools\realesrgan" | Out-Null
+          Invoke-WebRequest "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip" -OutFile "realesrgan.zip"
+          Expand-Archive "realesrgan.zip" -DestinationPath "dist\tools\realesrgan" -Force
+
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          Set-Location "$env:PROJECT_ROOT"
+          Write-Host "==== DIST CONTENTS ===="
+          Get-ChildItem "dist" -Recurse | Select-Object FullName,Length
+          if (-not (Test-Path "dist\YTStudioCoreNative.exe")) { throw "Executable missing" }
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: YT-Studio-CORE-Windows-x64
+          path: ${{ env.PROJECT_ROOT }}\dist\
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 30
