@@ -15,7 +15,6 @@ $nl = [Environment]::NewLine
 $rcText = @'
 #include <windows.h>
 101 ICON "src\\app.ico"
-1 RT_MANIFEST "src\\app.manifest"
 '@
 [IO.File]::WriteAllText($rc,$rcText,[Text.UTF8Encoding]::new($false))
 
