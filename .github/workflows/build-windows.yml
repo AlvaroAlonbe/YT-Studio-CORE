@@ -3,45 +3,32 @@ name: Build YT Studio CORE Windows
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "cloud-build-source" ]
 
 permissions:
   contents: read
 
 jobs:
-  build-windows:
-    runs-on: windows-2025
+  build:
+    runs-on: windows-2022
     timeout-minutes: 45
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Reconstruct source archive
+      - name: Reconstruct full stable source
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          if (Test-Path "source_parts") {
-            $parts = Get-ChildItem "source_parts\part*" | Sort-Object Name
-            if ($parts.Count -eq 0) { throw "No source_parts found" }
-            $b64 = ($parts | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) -join ""
-          } elseif (Test-Path "source.b64") {
-            $b64 = [IO.File]::ReadAllText("source.b64").Trim()
-          } else {
-            throw "No source archive found"
-          }
-          [IO.File]::WriteAllBytes("source.zip",[Convert]::FromBase64String($b64))
-          if (Test-Path "work") { Remove-Item "work" -Recurse -Force }
-          Expand-Archive "source.zip" -DestinationPath "work"
-          Write-Host "Source archive extracted"
-          Get-ChildItem work -Recurse -File | Select-Object FullName
-
-      - name: Normalize project root
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $cpp = Get-ChildItem work -Recurse -Filter "YTStudioNative.cpp" | Select-Object -First 1
-          if (-not $cpp) { throw "YTStudioNative.cpp was not found in reconstructed source" }
+          $bundle = "cloud_bundle\source_bundle.b64"
+          if (-not (Test-Path $bundle)) { throw "Stable source bundle not found: $bundle" }
+          $b64 = [IO.File]::ReadAllText($bundle).Trim()
+          [IO.File]::WriteAllBytes("source_full.zip",[Convert]::FromBase64String($b64))
+          if (Test-Path "work_full") { Remove-Item "work_full" -Recurse -Force }
+          Expand-Archive "source_full.zip" -DestinationPath "work_full" -Force
+          $cpp = Get-ChildItem work_full -Recurse -Filter "YTStudioNative.cpp" | Select-Object -First 1
+          if (-not $cpp) { throw "YTStudioNative.cpp was not found in full source archive" }
           $srcDir = $cpp.Directory.FullName
           $root = Split-Path $srcDir -Parent
           Copy-Item "build_files\YTStudioCoreNative.vcxproj" "$root\YTStudioCoreNative.vcxproj" -Force
@@ -49,6 +36,24 @@ jobs:
           Copy-Item "build_files\packages.config" "$root\packages.config" -Force
           "PROJECT_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Host "PROJECT_ROOT=$root"
+          Get-ChildItem $root -Recurse -File | Select-Object FullName,Length
+
+      - name: Apply glass aurora dark UI
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          .\build_files\apply-aurora-safe.ps1 -ProjectRoot "$env:PROJECT_ROOT"
+          .\build_files\apply-webshell-v4.ps1 -ProjectRoot "$env:PROJECT_ROOT"
+          .\build_files\generate-app-icon-v5.ps1 -ProjectRoot "$env:PROJECT_ROOT"
+          .\build_files\apply-webshell-v5.ps1 -ProjectRoot "$env:PROJECT_ROOT"
+
+      - name: Inspect UI source
+        shell: pwsh
+        run: |
+          Set-Location "$env:PROJECT_ROOT"
+          $p = "src\\YTStudioNative.cpp"
+          Write-Host "==== UI SOURCE MARKERS ===="
+          Select-String -Path $p -SimpleMatch -Pattern @("g_topBrush","g_navBrush","WM_PAINT","TrackPopupMenu","CreatePopupMenu","ID_DOWNLOAD","ID_DL_4K","CreateSolidBrush","Btn(","CreateWindowW","WndProc","Layout(") -Context 5,12 | ForEach-Object { $_.ToString() }
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -62,18 +67,32 @@ jobs:
           Set-Location "$env:PROJECT_ROOT"
           nuget restore "YTStudioCoreNative.sln" -PackagesDirectory "packages" -NonInteractive
 
-      - name: Build Release x64
+      - name: Build full Release x64
         shell: pwsh
         run: |
           Set-Location "$env:PROJECT_ROOT"
           msbuild "YTStudioCoreNative.sln" /m /t:Build /p:Configuration=Release /p:Platform=x64 /v:minimal
-          if (-not (Test-Path "dist\YTStudioCoreNative.exe")) {
-            throw "Build finished but dist\YTStudioCoreNative.exe was not generated"
+          if (-not (Test-Path "dist\YTStudioCoreNative.exe")) { throw "EXE not generated" }
+
+      - name: Package integrated editor and helper
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-Location "$env:PROJECT_ROOT"
+          if (Test-Path "helper_native.py") {
+            Copy-Item "helper_native.py" "dist\helper_native.py" -Force
+          } else {
+            throw "helper_native.py missing from stable source"
+          }
+          if (Test-Path "web") {
+            New-Item -ItemType Directory -Force "dist\web" | Out-Null
+            Copy-Item "web\*" "dist\web\" -Recurse -Force
+          } else {
+            throw "web folder missing from stable source"
           }
 
-      - name: Add portable Python helper
+      - name: Add portable Python runtime
         shell: pwsh
-        continue-on-error: true
         run: |
           $ErrorActionPreference = "Stop"
           Set-Location "$env:PROJECT_ROOT"
@@ -83,7 +102,6 @@ jobs:
 
       - name: Add yt-dlp and FFmpeg
         shell: pwsh
-        continue-on-error: true
         run: |
           $ErrorActionPreference = "Stop"
           Set-Location "$env:PROJECT_ROOT"
@@ -94,7 +112,8 @@ jobs:
           Expand-Archive "ffmpeg.zip" -DestinationPath "ffmpeg_tmp" -Force
           $ffmpeg = Get-ChildItem "ffmpeg_tmp" -Recurse -Filter "ffmpeg.exe" | Select-Object -First 1
           $ffprobe = Get-ChildItem "ffmpeg_tmp" -Recurse -Filter "ffprobe.exe" | Select-Object -First 1
-          if ($ffmpeg) { Copy-Item $ffmpeg.FullName "dist\tools\ffmpeg.exe" -Force }
+          if (-not $ffmpeg) { throw "ffmpeg.exe not found" }
+          Copy-Item $ffmpeg.FullName "dist\tools\ffmpeg.exe" -Force
           if ($ffprobe) { Copy-Item $ffprobe.FullName "dist\tools\ffprobe.exe" -Force }
 
       - name: Add Real-ESRGAN
@@ -107,15 +126,80 @@ jobs:
           Invoke-WebRequest "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip" -OutFile "realesrgan.zip"
           Expand-Archive "realesrgan.zip" -DestinationPath "dist\tools\realesrgan" -Force
 
-      - name: Verify artifact
+      - name: Verify complete portable
         shell: pwsh
         run: |
           Set-Location "$env:PROJECT_ROOT"
-          Write-Host "==== DIST CONTENTS ===="
-          Get-ChildItem "dist" -Recurse | Select-Object FullName,Length
-          if (-not (Test-Path "dist\YTStudioCoreNative.exe")) { throw "Executable missing" }
+          $required = @(
+            "dist\YTStudioCoreNative.exe",
+            "dist\helper_native.py",
+            "dist\web\editor.html",
+            "dist\runtime\python.exe",
+            "dist\tools\yt-dlp.exe",
+            "dist\tools\ffmpeg.exe"
+          )
+          foreach ($item in $required) {
+            if (-not (Test-Path $item)) { throw "Required portable component missing: $item" }
+          }
+          Write-Host "==== COMPLETE DIST ===="
+          Get-ChildItem "dist" -Recurse -File | Select-Object FullName,Length
 
-      - name: Upload Windows build
+      - name: Export validated full project ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-Location "$env:PROJECT_ROOT"
+
+          $export = Join-Path $env:GITHUB_WORKSPACE "project_export"
+          $zip = Join-Path $env:GITHUB_WORKSPACE "YT-Studio-CORE_WebShell-Aurora_v5_FULL.zip"
+
+          if (Test-Path $export) { Remove-Item $export -Recurse -Force }
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          New-Item -ItemType Directory -Force $export | Out-Null
+
+          Copy-Item "src" "$export\src" -Recurse -Force
+          Copy-Item "web" "$export\web" -Recurse -Force
+          Copy-Item "helper_native.py" "$export\helper_native.py" -Force
+          Copy-Item "packages.config" "$export\packages.config" -Force
+          Copy-Item "YTStudioCoreNative.sln" "$export\YTStudioCoreNative.sln" -Force
+          Copy-Item "YTStudioCoreNative.vcxproj" "$export\YTStudioCoreNative.vcxproj" -Force
+          Copy-Item "$env:GITHUB_WORKSPACE\build_files\COMPILAR_RELEASE_X64.bat" "$export\COMPILAR_RELEASE_X64.bat" -Force
+          Copy-Item "$env:GITHUB_WORKSPACE\build_files\README_BUILD.txt" "$export\README_BUILD.txt" -Force
+          Copy-Item "dist" "$export\dist" -Recurse -Force
+
+          $required = @(
+            "$export\src\YTStudioNative.cpp",
+            "$export\src\app.manifest",
+            "$export\src\app.rc",
+            "$export\web\editor.html",
+            "$export\helper_native.py",
+            "$export\packages.config",
+            "$export\YTStudioCoreNative.sln",
+            "$export\YTStudioCoreNative.vcxproj",
+            "$export\COMPILAR_RELEASE_X64.bat",
+            "$export\dist\YTStudioCoreNative.exe",
+            "$export\dist\helper_native.py",
+            "$export\dist\web\editor.html",
+            "$export\dist\runtime\python.exe",
+            "$export\dist\tools\yt-dlp.exe",
+            "$export\dist\tools\ffmpeg.exe"
+          )
+          foreach ($item in $required) {
+            if (-not (Test-Path $item)) { throw "Missing project file: $item" }
+          }
+
+          Compress-Archive -Path "$export\*" -DestinationPath $zip -CompressionLevel Optimal
+
+      - name: Upload validated project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: YT-Studio-CORE-WebShell-Aurora-v5-FULL
+          path: YT-Studio-CORE_WebShell-Aurora_v5_FULL.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Upload complete Windows portable
         uses: actions/upload-artifact@v4
         with:
           name: YT-Studio-CORE-Windows-x64
