@@ -206,7 +206,7 @@ void CreateControls
 Replace-One 'void DrawOwnerButton\(const DRAWITEMSTRUCT\* dis\) \{.*?\r?\n\}\r?\n\r?\nvoid CreateControls' $button 'DrawOwnerButton'
 
 # Animate buttons only; never invalidate the whole native header.
-$timerOld = 'RECT orb\{ 0, 0, Ui\(hwnd, 62\), Ui\(hwnd, 74\) \};\s*InvalidateRect\(hwnd, &orb, FALSE\);'
+$timerOld = 'RECT orb\{[^\r\n]+\};\s*InvalidateRect\(hwnd, &orb, FALSE\);'
 $timerNew = @'
 RECT orb{ 0, 0, Ui(hwnd, 72), Ui(hwnd, 80) };
             InvalidateRect(hwnd, &orb, FALSE);
